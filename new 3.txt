@@ -1,0 +1,288 @@
+public TypeDossier[] getListTypeDossier();
+public void addTypeDossier(@RequestBody TypeDossier typeD);
+public void deleteTypeDossier(int id, TypeDossier typeD);
+public TypeDossier getLastOneTypeDossier();
+
+
+@Override
+	public TypeDossier[] getListTypeDossier() {
+		final String uri = "http://localhost:8081/SelectTypeDossierRest";
+		RestTemplate restTemplate = new RestTemplate();
+		TypeDossier[]  result = restTemplate.getForObject(uri, TypeDossier[] .class);
+		return result;
+	}
+
+
+
+
+
+
+@Override
+	public TypeDossier getLastOneTypeDossier() {
+		final String uri = "http://localhost:8081/selectLastTypeDossierRest";
+		RestTemplate restTemplate = new RestTemplate();
+		TypeDossier result = restTemplate.getForObject(uri, TypeDossier.class);
+		
+		
+		return result;
+	}
+	
+	
+	@Override
+	public void addTypeDossier(TypeDossier typeD) {
+		final String uris = "http://localhost:8081/addTypeDossierRest";
+		RestTemplate restTemplate = new RestTemplate();
+
+		 restTemplate.postForLocation(uris, typeD, TypeDossier.class);
+		
+	}
+	
+	
+	@Override
+	public void deleteTypeDossier(int id, TypeDossier delai) {
+		final String uri = "http://localhost:8088/deleteTypeDossierRest/"+id;
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.put(uri, delai);
+		
+	}
+	
+	
+	
+	
+	 @RequestMapping(value = "/addTypeDossierRest", method = RequestMethod.POST)
+    public ResponseEntity<Void> addTypeDossierRest(@RequestBody TypeDossier tribuanux,    UriComponentsBuilder ucBuilder) {
+       
+ 
+        String g=tribuanux.getNom();
+        
+        
+        tribuanux.setEtape(etapeRepository.getOne(tribuanux.getTypeDossierId()));
+        tribuanux.setNom(g);
+        typeDRepository.save(tribuanux);
+ 
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(ucBuilder.path("/addTypeDossierRest/{id}").buildAndExpand(tribuanux.getTypeDossierId()).toUri());
+        return new ResponseEntity<Void>(headers, HttpStatus.CREATED);
+    }
+	
+	
+	@RequestMapping(value = "/selectLastTypeDossierRest", method = RequestMethod.GET)
+    public ResponseEntity<TypeDossier>  selectLastTypeDossierRest() {
+    	TypeDossier etapeDossier = typeDRepository.findAll().get(typeDRepository.findAll().size()-1);
+    if(etapeDossier==null){
+    	return new ResponseEntity<TypeDossier>(HttpStatus.NO_CONTENT);
+    }
+    return new ResponseEntity<TypeDossier>(etapeDossier, HttpStatus.OK);
+}
+
+
+@RequestMapping(value = "/SelectTypeDossierRest", method = RequestMethod.GET)
+    public ResponseEntity<List<TypeDossier>>  SelectTypeDossierRest() {
+    Page<TypeDossier> etapeDossier = typeDRepository.getTypeDossier(new PageRequest(0, 6));
+    List<TypeDossier> videosList = etapeDossier.getContent();
+    if(etapeDossier.isEmpty()){
+    	return new ResponseEntity<List<TypeDossier>>(HttpStatus.NO_CONTENT);
+    }
+    return new ResponseEntity<List<TypeDossier>>(videosList, HttpStatus.OK);
+}
+
+@RequestMapping(value = "/deleteTypeDossierRest/{typeDId}", method = RequestMethod.PUT)
+			    public ResponseEntity<TypeDossier>  deleteTypeDossierRest(@PathVariable int typeDId ) {
+			    TypeDossier trri = typeDRepository.getOne(typeDId);
+			    if (trri==null) {
+			        
+			        return new ResponseEntity<TypeDossier>(HttpStatus.NOT_FOUND);
+			    }
+
+			    trri.setDeleteDateTime(new Date());
+			    typeDRepository.save(trri);
+
+			    
+			    return new ResponseEntity<TypeDossier>(trri, HttpStatus.OK);
+
+			    
+			}
+	
+	
+	
+	
+	controlerrr client
+	
+	
+	@RequestMapping(value = "/createTypeDossier", method = RequestMethod.POST)
+
+	public ModelAndView addTypeDossier(@RequestBody TypeDossier type) {
+		Map<String, Object> model = new HashMap<String, Object>();
+
+		web.addTypeDossier(type);
+		model.put("tr", web.getLastOneTypeDossier());
+		return new ModelAndView("typeDossierTr", model);
+				
+				
+	}
+	
+	@RequestMapping(value = "/deleteTypeDossier/{typeDossierId}", method = RequestMethod.PUT)
+
+	public @ResponseBody String deleteTypeDossier(@PathVariable int typeDossierId)  {
+		
+        TypeDossier delais =typeDRepository.getOne(typeDossierId);
+
+        
+		web.deleteTypeDossier(typeDossierId, delais);
+		return "";
+	}
+	
+	@RequestMapping(value = "/getTypeDossier", method = RequestMethod.GET)
+	public ModelAndView getTypeDossier() {
+		Map<String, Object> model = new HashMap<String, Object>();
+		model.put("conflis", web.getListTypeDossier());
+
+		return new ModelAndView("typeDossier", model);
+
+	}
+	
+	
+	var inputs = $(".button");
+      
+      for(var i = 0; i < inputs.length; i++){
+     	    
+     	    $(inputs[i]).toolbar({
+                	content: '#tool'+i,
+                });
+     	}
+     
+      
+      
+      
+      
+      function getAll() {
+         
+             
+          
+         var nom = $("#nom").val();
+        
+         var  delai = {"nom" : nom };
+
+      $.ajax({
+          url : "/createTypeDossier",
+          type : "POST",                    
+          contentType : 'application/json; charset=utf-8',
+          
+          data : JSON.stringify(delai),
+          success : function (response) {
+         	 $("#modaldossiers").hide();
+             $("#tbody").after(response);
+          },
+          error : function (response) {
+         	
+         	
+         		
+              
+             
+          },
+      });
+      
+    /*    $.post('', {}, function(data){}, 'json').fail(function(){}).always()
+      */
+      }
+      function updateDelaiEtapeDossiers(id){
+     	 var etapeDossierId = $("#type").val();
+          var etapedossier_mois = $("#etapedossier_mois").val();
+          var  delai = {"delaietapedossierId" : etapeDossierId,"etapedossier_mois":etapedossier_mois };
+
+       $.ajax({
+           url : "/updateDelaiEtapeDossierss?delaiEtapeDossierId="+id,
+           type : "PUT",                    
+           contentType : 'application/json; charset=utf-8',
+           dataType : 'json',
+           data : JSON.stringify(delai),
+           success : function (response) {
+               href.location="getDelaiEtapeDossiers";
+           },
+           error : function (response) {
+          	
+          	
+          		
+          		
+               
+              
+           },
+       });
+
+      }
+      
+      /* function updateDelaiEtapeDossier(id){
+     	 $.ajax({
+              url : "/getInfoDosssier?delaiEtapeDossierId="+id,
+              type : "PUT",                    
+              contentType : 'application/json; charset=utf-8',
+              dataType : 'json',
+              data : JSON.stringify(delai),
+              success : function (response) {
+             	 addDossier();
+              },
+              error : function (response) {
+             	
+             	
+             		
+             		
+                  
+                 
+              },
+          });
+      }
+       */
+      
+      function deleteTypeDossier(id){
+     	 
+     	 $.ajax({
+              url : "/deleteTypeDossier/"+id,
+              type : "PUT",                    
+              
+              
+              data: {
+                  
+                  
+
+              },
+              
+              success : function (response) {
+             	
+             	 $("#tr"+id).addClass("hidden");
+              },
+              error : function (response) {
+             	 alert(response)
+             	
+
+              },
+          });
+     	 
+     	 
+      }
+      
+      
+      
+      function archiveFunction(id) {
+     	 
+     	 event.preventDefault(); 
+     	 var form = event.target.form; 
+     	         swal({
+     	   title: "? تاكيد الحذف  ",
+     	   type: "warning",
+     	   showCancelButton: true,
+     	   confirmButtonColor: "#DD6B55",
+     	   confirmButtonText: "نعم ",
+     	   cancelButtonText: "لا",
+     	   closeOnConfirm: true,
+     	   closeOnCancel: true
+     	 },
+     	 function(isConfirm){
+     	   if (isConfirm) {
+     		  deleteTypeDossier(id);       
+     	   } else {
+     	     swal("Cancelled", "Your imaginary file is safe :)", "error");
+     	   }
+     	 });
+     	 }
+      
+      
